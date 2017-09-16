@@ -5,9 +5,6 @@ map_fn = function () {
     map.setZoom(13);
     map.setView([41.48, -71.31]);
 
-    map.on('locationfound', onLocationFound);
-    map.on('locationerror', onLocationError);
-
     // locate button
     L.easyButton('fa-crosshairs fa-lg',
         function () {
@@ -18,6 +15,17 @@ map_fn = function () {
         }).addTo(map);
 
     window.map = map;
+    window.popup = L.popup();
+
+    map.on('locationfound', onLocationFound);
+    map.on('locationerror', onLocationError);
+    map.on('contextmenu', onMapPress);
+}
+
+function onMapPress(e) {
+    window.popup.setLatLng(e.latlng)
+        .setContent("hi")
+        .openOn(window.map);
 }
 
 function onLocationFound(e) {
