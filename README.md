@@ -24,6 +24,8 @@
 * [Leaflet Icon.Glyph](https://github.com/Leaflet/Leaflet.Icon.Glyph)
 * [Font Awesome](http://fontawesome.io/icons/)
 * [Leaflet Marker-Cluster](https://github.com/Leaflet/Leaflet.markercluster)
+* [Leaflet providers](https://github.com/leaflet-extras/leaflet-providers)
+* [Leaflet EasyButton](https://github.com/cliffcloud/Leaflet.EasyButton)
 
 ### deployment ###
 
