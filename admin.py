@@ -31,11 +31,14 @@ def import_geojson_to_sheet(geojson_path):
                 if feature.geometry is not None \
                    and feature.geometry.type == "Point":
                     lon, lat = list(geojson.coords(feature))[0]
-                    verified = feature.properties.get('verified', 'unknown')
-                    marking = feature.properties.get('marking', 'unknown')
-                    signal = feature.properties.get('signal', 'unknown')
-                    features = feature.properties.get('features', '')
-                    notes = feature.properties.get('notes', '')
+                    verified = feature.properties.get('Verified Status',
+                                                      'unknown')
+                    marking = feature.properties.get('Pedestrian Markings',
+                                                     'unknown')
+                    signal = feature.properties.get('Crossing Signal',
+                                                    'unknown')
+                    features = feature.properties.get('Other Features', '')
+                    notes = feature.properties.get('Notes', '')
                     parsed_list.append([lon, lat, verified,
                                         marking, signal, features, notes])
             # if we got here, we built a full parsed list.
@@ -64,3 +67,22 @@ def import_geojson_to_sheet(geojson_path):
             print("was expecting a file with one FeatureCollection, " +
                   "where each feature is a point!")
             print(e)
+
+
+def export_sheet_to_geojson(filename, sheet="gis_dataset"):
+    """grabs the google spreadsheet and saves it as a geojson"""
+    try:
+        worksheet = backend.worksheet("gis_dataset")
+        vals = worksheet.get_all_records()
+        features = []
+        for row in vals:
+            pt = geojson.Point((row['Longitude'], row['Latitude']))
+            feature = geojson.Feature(geometry=pt,
+                                      properties=row)
+            features.append(feature)
+        fc = geojson.FeatureCollection(features)
+        with open(filename, 'w') as f:
+            geojson.dump(fc, f, indent=2)
+    except gspread.exceptions.WorksheetNotFound:
+        print("was expecting to find worksheet with name: " + sheet +
+              "but was unable to, cannot export!")
