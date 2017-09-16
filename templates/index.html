@@ -1,0 +1,18 @@
+<!doctype html>
+<html>
+  <head>
+    <title>Fieldwork App</title>
+    {% for css in css_files %}
+    <link rel="stylesheet" href="{{ css }}">
+    {% endfor %}
+    {% for js in js_files %}
+    <script src="{{ js }}"></script>
+    {% endfor %}
+  </head>
+  <body>
+    <script>
+      var socket = io();
+      socket.emit('message', "testing, testing");
+    </script>
+  </body>
+</html>
