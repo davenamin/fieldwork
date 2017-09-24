@@ -41,6 +41,11 @@ def import_geojson_to_sheet(geojson_path):
                     lon, lat = list(geojson.coords(feature))[0]
                     verified = feature.properties.get('Verified Status',
                                                       'unknown')
+                    if (verified == 'unknown'):
+                        # try to use the 'verified' field instead
+                        verified = feature.properties.get('verified',
+                                                          'unknown')
+
                     marking = feature.properties.get('Pedestrian Markings',
                                                      'unknown')
                     signal = feature.properties.get('Crossing Signal',
