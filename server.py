@@ -166,6 +166,13 @@ def test_data():
     return last_values.to_json(orient="records")
 
 
+@app.route("/timer")
+def test_background():
+    status = "was OK" if background_thread is not None else "needed restart"
+    start_background()
+    return json.dumps(status)
+    
+
 # ------------ flask routing ------------- #
 background_thread = None
 
