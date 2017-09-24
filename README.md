@@ -10,6 +10,8 @@
 ### creating the backing sheet ###
 this application assumes you have an existing sheet to read from and modify. functions to import and export data from the sheet, outside of the web application, are in the file `admin.py`.
 
+"Administrator"-verified data will live in a "gis\_dataset" worksheet, while data logged from the web app will append to "field\_submissions"
+
 ### deployment ###
 * set environment variables - 
   * "FLASK\_SECRET" to, something secret?, 
@@ -21,9 +23,9 @@ The last step above is because the characters in the private key credentials don
 
 Now, if you want to run this on [Dokku](http://dokku.viewdocs.io/dokku/):
 * `dokku apps:create <appname>`
-* `dokku config:set <appname> FLASK\_SECRET=<...> GOOGLE\_SHEET\_KEY=<...> GOOGLE\_CREDENTIALS\_B64=<previously encoded string>`
+* `dokku config:set <appname> FLASK_SECRET=<...> GOOGLE_SHEET_KEY=<...> GOOGLE_CREDENTIALS_B64=<previously encoded string>`
 * `dokku plugin:install https://github.com/dokku/dokku-letsencrypt.git`
-* `dokku config:set --global DOKKU\_LETSENCRYPT\_EMAIL=<your email address>`
+* `dokku config:set --global DOKKU_LETSENCRYPT_EMAIL=<your email address>`
 * `dokku letsencrypt <appname>`
 
 and push to deploy. The [Let's Encrypt](https://letsencrypt.org/) stuff is because the HTML5 Geolocation API isn't available unless served over HTTPS.
