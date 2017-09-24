@@ -15,7 +15,45 @@ map_fn = function () {
         }).addTo(map);
 
     // sidewalk marker cluster
-    window.cluster = L.markerClusterGroup();
+    window.cluster = L.markerClusterGroup({
+        iconCreateFunction: function (cluster) {
+            var markers = cluster.getAllChildMarkers();
+            var childCount = cluster.getChildCount();
+            var cluster_class = "partial";
+            for (var ii = 0; ii < markers.length; ii++) {
+                var m = markers[ii];
+                if (!m.data) {
+                    cluster_class = "unknown";
+                    break;
+                } else {
+                    if (!m.data["Verified Status"].toUpperCase().includes("Y")) {
+                        if (cluster_class === "verified") {
+                            cluster_class = "partial";
+                            break;
+                        } else {
+                            cluster_class = "unverified";
+                            continue;
+                        }
+                    } else {
+                        if (cluster_class === "unverified") {
+                            cluster_class = "partial";
+                            break;
+                        } else {
+                            cluster_class = "verified";
+                            continue;
+                        }
+                    }
+
+                }
+            }
+
+            return new L.DivIcon({
+                html: '<div><span>' + childCount + '</span></div>',
+                className: 'marker-cluster marker-cluster-' + cluster_class,
+                iconSize: new L.Point(40, 40)
+            });
+        }
+    });
     window.cluster.addTo(map);
 
     // connection status
@@ -44,8 +82,8 @@ map_fn = function () {
     legend.onAdd = function (map) {
 
         var div = L.DomUtil.create('div', 'info legend'),
-            status = ["Verified", "Not Verified"],
-            colors = ["green", "blue"];
+            status = ["Verified", "Not Verified", "Cluster contains both"],
+            colors = ["green", "blue", "orange"];
 
         for (var i = 0; i < status.length; i++) {
             div.innerHTML +=
@@ -118,9 +156,12 @@ function onSubmissionButton(e) {
 }
 
 function onDataReceived(e) {
-    if (!window.markers) {
-        window.markers = [];
+    if (window.markers) {
+        for (var ii = 0; ii < window.markers.length; ii++) {
+            window.cluster.removeLayer(window.markers[ii]);
+        }
     }
+    window.markers = [];
     data = JSON.parse(e);
     for (var ii = 0; ii < data.length; ii++) {
         var m = buildMarker(data[ii]);
@@ -135,8 +176,12 @@ function onUpdateReceived(e) {
     for (var ix in data) {
         console.log("trying ix " + ix);
         var m = buildMarker(data[ix], window.markers[ix]);
-        window.cluster.removeLayer(m);
-        window.cluster.addLayer(m);
+        if (window.markers[ii]) {
+            window.cluster.refreshClusters(m);
+        } else {
+            window.markers[ix] = m;
+            window.cluster.addLayer(m);
+        }
     }
 }
 
@@ -168,6 +213,7 @@ function buildMarker(data, prevMarker) {
         marker = L.marker().bindPopup("");
     }
     marker.setLatLng([data["Latitude"], data["Longitude"]]);
+    marker.data = data;
     var opts = {};
     if (data["Verified Status"] && data["Verified Status"] == "Y") {
         opts.markerColor = "green";
@@ -193,5 +239,5 @@ function buildPopupContent(data) {
         "Crossing Signal: " + data["Crossing Signal"] + "<br>" +
         "Other Features: " + data["Other Features"] + "<br>" +
         "Notes: " + data["Notes"];
-        return div;
+    return div;
 }
