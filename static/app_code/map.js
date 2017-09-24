@@ -22,32 +22,8 @@ map_fn = function () {
     var info = L.control();
 
     info.onAdd = function (map) {
-        this._div = L.DomUtil.create('div', 'status');
+        this._div = L.DomUtil.create('div', 'info');
         this.updateConnectionStatus("disconnected");
-        this._div.style.cssText = " .info { \
-            padding: 6px 8px; \
-            font: 14px/16px Arial, Helvetica, sans-serif; \
-            background: white; \
-            background: rgba(255,255,255,0.8); \
-            box-shadow: 0 0 15px rgba(0,0,0,0.2); \
-            border-radius: 5px; \
-        } \
-        .info h4 { \
-            margin: 0 0 5px; \
-            color: #777; \
-        } \
-        .legend { \
-            line-height: 18px; \
-            color: #555; \
-        } \
-        .legend i { \
-            width: 18px; \
-            height: 18px; \
-            float: left; \
-            margin-right: 8px; \
-            opacity: 0.7; \
-        } \
-        ";
         return this._div;
     };
     info.updateConnectionStatus = function (status) {
@@ -71,36 +47,11 @@ map_fn = function () {
             status = ["Verified", "Not Verified"],
             colors = ["green", "blue"];
 
-        // loop through our density intervals and generate a label with a colored square for each interval
         for (var i = 0; i < status.length; i++) {
             div.innerHTML +=
                 '<i style="background:' + colors[i] + '"></i> ' +
                 status[i] + (status[i + 1] ? '<br>' : '');
         }
-        div.style.cssText = " .info { \
-            padding: 6px 8px; \
-            font: 14px/16px Arial, Helvetica, sans-serif; \
-            background: white; \
-            background: rgba(255,255,255,0.8); \
-            box-shadow: 0 0 15px rgba(0,0,0,0.2); \
-            border-radius: 5px; \
-        } \
-        .info h4 { \
-            margin: 0 0 5px; \
-            color: #777; \
-        } \
-        .legend { \
-            line-height: 18px; \
-            color: #555; \
-        } \
-        .legend i { \
-            width: 18px; \
-            height: 18px; \
-            float: left; \
-            margin-right: 8px; \
-            opacity: 0.7; \
-        } \
-        ";
         return div;
     };
 
