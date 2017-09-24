@@ -187,9 +187,11 @@ function buildMarker(data, prevMarker) {
 }
 
 function buildPopupContent(data) {
-    return "Verified: " + data["Verified Status"] + "<br>" +
+    var div = L.DomUtil.create('div', 'info gis');
+    div.innerHTML = "Verified: " + data["Verified Status"] + "<br>" +
         "Pedestrian Markings: " + data["Pedestrian Markings"] + "<br>" +
         "Crossing Signal: " + data["Crossing Signal"] + "<br>" +
         "Other Features: " + data["Other Features"] + "<br>" +
         "Notes: " + data["Notes"];
+        return div;
 }

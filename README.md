@@ -11,6 +11,22 @@
 this application assumes you have an existing sheet to read from and modify. functions to import and export data from the sheet, outside of the web application, are in the file `admin.py`.
 
 ### deployment ###
+* set environment variables - 
+  * "FLASK\_SECRET" to, something secret?, 
+  * "GOOGLE\_SHEET\_KEY" to the id of the backing sheet, 
+  * "GOOGLE\_CREDENTIALS" to the private key from the google API.
+* use the `admin.py` functions to push data to the google spreadsheet and create a base64 encoded string of the private key credentials
+
+The last step above is because the characters in the private key credentials don't always play nicely in an environment variable, at least not remotely.
+
+Now, if you want to run this on [Dokku](http://dokku.viewdocs.io/dokku/):
+* `dokku apps:create <appname>`
+* `dokku config:set <appname> FLASK\_SECRET=<...> GOOGLE\_SHEET\_KEY=<...> GOOGLE\_CREDENTIALS\_B64=<previously encoded string>`
+* `dokku plugin:install https://github.com/dokku/dokku-letsencrypt.git`
+* `dokku config:set --global DOKKU\_LETSENCRYPT\_EMAIL=<your email address>`
+* `dokku letsencrypt <appname>`
+
+and push to deploy. The [Let's Encrypt](https://letsencrypt.org/) stuff is because the HTML5 Geolocation API isn't available unless served over HTTPS.
 
 ## other information ##
 
