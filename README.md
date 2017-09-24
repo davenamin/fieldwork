@@ -18,10 +18,15 @@ this application assumes you have an existing sheet to read from and modify. fun
   * "GOOGLE\_SHEET\_KEY" to the id of the backing sheet, 
   * "GOOGLE\_CREDENTIALS" to the private key from the google API.
 * use the `admin.py` functions to push data to the google spreadsheet and create a base64 encoded string of the private key credentials
-
+  * set "GOOGLE\_CREDENTIALS\_B64" to the encoded private key string.
+  
 The last step above is because the characters in the private key credentials don't always play nicely in an environment variable, at least not remotely.
 
-Now, if you want to run this on [Dokku](http://dokku.viewdocs.io/dokku/):
+#### Get me a development environment! ####
+* install the pip dependencies from `requirements.txt`
+* run `python server.py`
+
+#### Get me push-to-deploy on [Dokku](http://dokku.viewdocs.io/dokku/)! ####
 * `dokku apps:create <appname>`
 * `dokku config:set <appname> FLASK_SECRET=<...> GOOGLE_SHEET_KEY=<...> GOOGLE_CREDENTIALS_B64=<previously encoded string>`
 * `dokku plugin:install https://github.com/dokku/dokku-letsencrypt.git`

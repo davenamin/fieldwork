@@ -130,7 +130,11 @@ def handle_error(e):
 def handle_submission(obj):
     """log a new submission from a client to the spreadsheet"""
     backend = gc.open_by_key(os.environ['GOOGLE_SHEET_KEY'])
-    sub_worksheet = backend.worksheet("field_submissions")
+    try:
+        sub_worksheet = backend.worksheet("field_submissions")
+    except gspread.exceptions.WorksheetNotFound:
+        sub_worksheet = backend.add_worksheet("field_submissions", 1, 1)
+
     sub_worksheet.append_row([str(x) for x in obj])
 
 
