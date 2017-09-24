@@ -17,8 +17,52 @@ map_fn = function () {
     // sidewalk marker cluster
     window.cluster = L.markerClusterGroup();
     window.cluster.addTo(map);
+
+    // connection status
+    var info = L.control();
+
+    info.onAdd = function (map) {
+        this._div = L.DomUtil.create('div', 'status');
+        this.updateConnectionStatus("disconnected");
+        return this._div;
+    };
+    info.updateConnectionStatus = function (status) {
+        if (status.toUpperCase() === "CONNECTED".toUpperCase()) {
+            this._div.innerHTML = '<h4>connected</h4>'
+        } else {
+            this._div.innerHTML = '<h4>disconnected</h4>'
+        }
+    };
+    info.addTo(map);
+    window.infoControl = info;
+
+    // map legend
+    var legend = L.control({
+        position: 'bottomright'
+    });
+
+    legend.onAdd = function (map) {
+
+        var div = L.DomUtil.create('div', 'info legend'),
+            status = ["Verified", "Not Verified"],
+            colors = ["green", "blue"];
+
+        // loop through our density intervals and generate a label with a colored square for each interval
+        for (var i = 0; i < status.length; i++) {
+            div.innerHTML +=
+                '<i style="background:' + colors[i] + '"></i> ' +
+                status[i] + (status[i + 1] ? '&ndash;' + status[i + 1] + '<br>' : '+');
+        }
+
+        return div;
+    };
+
+    legend.addTo(map);
+
+    // global variables
     window.map = map;
     window.popup = L.popup();
+
 
     map.on('locationfound', onLocationFound);
     map.on('locationerror', onLocationError);
@@ -60,10 +104,12 @@ function onLocationError(e) {
 
 function onSocketConnect() {
     console.log('connected');
+    window.infoControl.updateConnectionStatus('CONNECTED');
 }
 
 function onSocketDisconnect() {
     console.log('disconnected');
+    window.infoControl.updateConnectionStatus('DISCONNECTED');
 }
 
 function onSubmissionButton(e) {
