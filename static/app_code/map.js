@@ -24,7 +24,7 @@ map_fn = function () {
     info.onAdd = function (map) {
         this._div = L.DomUtil.create('div', 'status');
         this.updateConnectionStatus("disconnected");
-        this._div.innerHTML.style.cssText = " .info { \
+        this._div.style.cssText = " .info { \
             padding: 6px 8px; \
             font: 14px/16px Arial, Helvetica, sans-serif; \
             background: white; \
@@ -35,6 +35,17 @@ map_fn = function () {
         .info h4 { \
             margin: 0 0 5px; \
             color: #777; \
+        } \
+        .legend { \
+            line-height: 18px; \
+            color: #555; \
+        } \
+        .legend i { \
+            width: 18px; \
+            height: 18px; \
+            float: left; \
+            margin-right: 8px; \
+            opacity: 0.7; \
         } \
         ";
         return this._div;
@@ -66,7 +77,7 @@ map_fn = function () {
                 '<i style="background:' + colors[i] + '"></i> ' +
                 status[i] + (status[i + 1] ? '<br>' : '');
         }
-        div.innerHTML.style.cssText = " .info { \
+        div.style.cssText = " .info { \
             padding: 6px 8px; \
             font: 14px/16px Arial, Helvetica, sans-serif; \
             background: white; \
