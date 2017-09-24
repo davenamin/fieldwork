@@ -125,6 +125,14 @@ def handle_error(e):
     print("ERROR: " + str(e))
 
 
+@socketio.on('submission')
+def handle_submission(obj):
+    """log a new submission from a client to the spreadsheet"""
+    backend = gc.open_by_key(os.environ['GOOGLE_SHEET_KEY'])
+    sub_worksheet = backend.worksheet("field_submissions")
+    sub_worksheet.append_row([str(x) for x in obj])
+
+
 @socketio.on('data_request')
 def handle_data_request(rows):
     """send requested rows to a client"""

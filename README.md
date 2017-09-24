@@ -29,7 +29,7 @@ this application assumes you have an existing sheet to read from and modify. fun
 * [JQuery](http://jquery.com/)
 * [SocketIO](https://socket.io/)
 * [Leaflet](http://leafletjs.com/)
-* [Leaflet Icon.Glyph](https://github.com/Leaflet/Leaflet.Icon.Glyph)
+* [Leaflet vector markers](https://github.com/hiasinho/Leaflet.vector-markers)
 * [Font Awesome](http://fontawesome.io/icons/)
 * [Leaflet Marker-Cluster](https://github.com/Leaflet/Leaflet.markercluster)
 * [Leaflet providers](https://github.com/leaflet-extras/leaflet-providers)

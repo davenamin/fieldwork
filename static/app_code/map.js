@@ -66,6 +66,13 @@ function onSocketDisconnect() {
     console.log('disconnected');
 }
 
+function onSubmissionButton(e) {
+    console.log('submitting: ' + e);
+    if (window.socket) {
+        window.socket.emit('submission', e);
+    }
+}
+
 function onDataReceived(e) {
     if (!window.markers) {
         window.markers = [];
@@ -114,8 +121,31 @@ function buildMarker(data, prevMarker) {
     if (prevMarker) {
         marker = prevMarker;
     } else {
-        marker = L.marker();
+        marker = L.marker().bindPopup("");
     }
-    marker.setLatLng([data.Latitude, data.Longitude]);
+    marker.setLatLng([data["Latitude"], data["Longitude"]]);
+    var opts = {};
+    if (data["Verified Status"] && data["Verified Status"] == "Y") {
+        opts.markerColor = "green";
+    } else {
+        opts.markerColor = "blue";
+    }
+    if (data["Pedestrian Markings"] &&
+        data["Pedestrian Markings"].toUpperCase() !== "unmarked".toUpperCase()) {
+        opts.icon = "times"
+    } else {
+        opts.icon = "exchange"
+    }
+
+    marker.setIcon(L.VectorMarkers.icon(opts));
+    marker.setPopupContent(buildPopupContent(data));
     return marker;
+}
+
+function buildPopupContent(data) {
+    return "Verified: " + data["Verified Status"] + "<br>" +
+        "Pedestrian Markings: " + data["Pedestrian Markings"] + "<br>" +
+        "Crossing Signal: " + data["Crossing Signal"] + "<br>" +
+        "Other Features: " + data["Other Features"] + "<br>" +
+        "Notes: " + data["Notes"];
 }
