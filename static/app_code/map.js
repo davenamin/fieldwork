@@ -176,7 +176,7 @@ function onUpdateReceived(e) {
     for (var ix in data) {
         console.log("trying ix " + ix);
         var m = buildMarker(data[ix], window.markers[ix]);
-        if (window.markers[ii]) {
+        if (window.markers[ix]) {
             window.cluster.refreshClusters(m);
         } else {
             window.markers[ix] = m;
