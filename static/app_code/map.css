@@ -30,41 +30,41 @@
 }
 
 .marker-cluster-unknown {
-    background-color: grey;
+    background-color: rgba(128, 128, 128, 0.6);
     color: white;
 }
 
 .marker-cluster-unknown div {
-    background-color: grey;
+    background-color: rgba(128, 128, 128, 0.6);
     color: white;
 }
 
 .marker-cluster-unverified {
-    background-color: blue;
+    background-color: rgba(0, 0, 255, 0.6);
     color: white;
 }
 
 .marker-cluster-unverified div {
-    background-color: blue;
+    background-color: rgba(0, 0, 255, 0.6);
     color: white;
 }
 
 .marker-cluster-verified {
-    background-color: green;
+    background-color: rgba(0, 128, 0, 0.6);
     color: white;
 }
 
 .marker-cluster-verified div {
-    background-color: green;
+    background-color: rgba(0, 128, 0, 0.6);
     color: white;
 }
 
 .marker-cluster-partial {
-    background-color: orange;
+    background-color: rgba(255, 162, 0, 0.6);
     color: white;
 }
 
 .marker-cluster-partial div {
-    background-color: orange;
+    background-color: rgba(255, 162, 0, 0.6);
     color: white;
 }

@@ -117,7 +117,7 @@ map_fn = function () {
 
 function onMapPress(e) {
     window.popup.setLatLng(e.latlng)
-        .setContent("hi")
+        .setContent("TODO: allow field submissions")
         .openOn(window.map);
 }
 
@@ -174,7 +174,7 @@ function onUpdateReceived(e) {
     data = JSON.parse(e);
     console.log(data);
     for (var ix in data) {
-        console.log("trying ix " + ix);
+        console.log("updating ix " + ix);
         var m = buildMarker(data[ix], window.markers[ix]);
         if (window.markers[ix]) {
             window.cluster.refreshClusters(m);
@@ -234,7 +234,8 @@ function buildMarker(data, prevMarker) {
 
 function buildPopupContent(data) {
     var div = L.DomUtil.create('div', 'info gis');
-    div.innerHTML = "Verified: " + data["Verified Status"] + "<br>" +
+    div.innerHTML = "TODO: allow field verification <br>" +
+        "Verified: " + data["Verified Status"] + "<br>" +
         "Pedestrian Markings: " + data["Pedestrian Markings"] + "<br>" +
         "Crossing Signal: " + data["Crossing Signal"] + "<br>" +
         "Other Features: " + data["Other Features"] + "<br>" +
