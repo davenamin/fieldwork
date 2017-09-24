@@ -3,6 +3,7 @@
 # Daven Amin, 09/15/2017
 import os
 import json
+import base64
 import geojson
 from google.oauth2 import service_account
 from google.auth.transport.requests import AuthorizedSession
@@ -18,6 +19,13 @@ authed_session = AuthorizedSession(scoped_creds)
 gc = gspread.Client(auth=scoped_creds)
 gc.session = authed_session
 backend = gc.open_by_key(os.environ['GOOGLE_SHEET_KEY'])
+
+
+def write_base64_encoded_credentials(filename):
+    """get past dokku issue where credentials need to be encoded"""
+    with open(filename, 'w') as f:
+        f.write(base64.b64encode(
+            os.environ['GOOGLE_CREDENTIALS'].encode()).decode())
 
 
 def import_geojson_to_sheet(geojson_path):

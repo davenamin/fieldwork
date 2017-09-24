@@ -5,6 +5,7 @@
 # Daven Amin, 09/15/2017
 import os
 import json
+import base64
 import pandas as pd
 from datetime import datetime
 from pathlib import Path
@@ -22,7 +23,7 @@ socketio = flask_socketio.SocketIO(app)
 
 # authorize gspread to access the google spreadsheet backend
 # adapted from https://github.com/burnash/gspread/issues/472
-json_creds = json.loads(os.environ['GOOGLE_CREDENTIALS'])
+json_creds = json.loads(base64.b64decode(os.environ['GOOGLE_CREDENTIALS_B64']))
 scope = ['https://www.googleapis.com/auth/spreadsheets']
 credentials = service_account.Credentials.from_service_account_info(json_creds)
 scoped_creds = credentials.with_scopes(scope)
