@@ -135,7 +135,7 @@ def handle_submission(obj):
     except gspread.exceptions.WorksheetNotFound:
         sub_worksheet = backend.add_worksheet("field_submissions", 1, 1)
 
-    sub_worksheet.append_row([str(x) for x in obj])
+    sub_worksheet.append_row([str(x) + " " + str(obj[x]) for x in obj])
 
 
 @socketio.on('data_request')

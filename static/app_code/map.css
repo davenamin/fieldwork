@@ -27,6 +27,8 @@
 
 .gis {
     box-shadow: none;
+    display: flex;
+    flex-direction: column;
 }
 
 .marker-cluster-unknown {

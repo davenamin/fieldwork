@@ -149,7 +149,8 @@ function onSocketDisconnect() {
 }
 
 function onSubmissionButton(e) {
-    console.log('submitting: ' + e);
+    console.log('submitting: ');
+    console.log(e);
     if (window.socket) {
         window.socket.emit('submission', e);
     }
@@ -164,7 +165,7 @@ function onDataReceived(e) {
     window.markers = [];
     data = JSON.parse(e);
     for (var ii = 0; ii < data.length; ii++) {
-        var m = buildMarker(data[ii]);
+        var m = buildMarker(ii, data[ii]);
         window.markers[ii] = m;
         window.cluster.addLayer(m);
     }
@@ -175,7 +176,7 @@ function onUpdateReceived(e) {
     console.log(data);
     for (var ix in data) {
         console.log("updating ix " + ix);
-        var m = buildMarker(data[ix], window.markers[ix]);
+        var m = buildMarker(ix, data[ix], window.markers[ix]);
         if (window.markers[ix]) {
             window.cluster.refreshClusters(m);
         } else {
@@ -205,7 +206,7 @@ function onResponseReceived(e) {
     console.log(e);
 }
 
-function buildMarker(data, prevMarker) {
+function buildMarker(key, data, prevMarker) {
     var marker;
     if (prevMarker) {
         marker = prevMarker;
@@ -228,17 +229,73 @@ function buildMarker(data, prevMarker) {
     }
 
     marker.setIcon(L.VectorMarkers.icon(opts));
-    marker.setPopupContent(buildPopupContent(data));
+    marker.setPopupContent(buildPopupContent(key, data));
     return marker;
 }
 
-function buildPopupContent(data) {
+function buildPopupContent(key, data) {
+    // the popup we're building 
     var div = L.DomUtil.create('div', 'info gis');
-    div.innerHTML = "TODO: allow field verification <br>" +
-        "Verified: " + data["Verified Status"] + "<br>" +
-        "Pedestrian Markings: " + data["Pedestrian Markings"] + "<br>" +
-        "Crossing Signal: " + data["Crossing Signal"] + "<br>" +
-        "Other Features: " + data["Other Features"] + "<br>" +
-        "Notes: " + data["Notes"];
+
+    // notes
+    L.DomUtil.create('br', div);
+    var notes = L.DomUtil.create('label', 'notes', div);
+    notes.innerHTML = "Notes: " + data["Notes"] + "<br>";
+
+    // create click handlers for logging data
+
+    // verified status
+    var verify = L.DomUtil.create('label', 'switch', div);
+    verify.innerHTML = "Verified Status";
+    var vcheckbox = L.DomUtil.create('input', 'slider', verify);
+    vcheckbox.setAttribute("type", "checkbox");
+    if (data["Verified Status"] && data["Verified Status"].toUpperCase() === "Y") {
+        vcheckbox.checked = True;
+    }
+
+    // pedestrian markings
+    L.DomUtil.create('br', div);
+    var markings = L.DomUtil.create('label', 'switch', div);
+    markings.innerHTML = "Pedestrian Markings";
+    var mcheckbox = L.DomUtil.create('input', 'slider', markings);
+    mcheckbox.setAttribute("type", "checkbox");
+    if (data["Pedestrian Markings"] && data["Pedestrian Markings"].toUpperCase() === "Y") {
+        mcheckbox.checked = True;
+    }
+
+    // crossing signal
+    L.DomUtil.create('br', div);
+    var signal = L.DomUtil.create('label', 'switch', div);
+    signal.innerHTML = "Crossing Signal";
+    var scheckbox = L.DomUtil.create('input', 'slider', signal);
+    scheckbox.setAttribute("type", "checkbox");
+    if (data["Crossing Signal"] && data["Crossing Signal"].toUpperCase() === "Y") {
+        scheckbox.checked = True;
+    }
+
+
+    // other features
+    L.DomUtil.create('br', div);
+    var other = L.DomUtil.create('label', 'notes', div);
+    other.innerHTML = "Other Features: ";
+    var otherInput = L.DomUtil.create('input', 'notes', other);
+    otherInput.setAttribute("type", "text");
+    otherInput.setAttribute("placeholder", data["Other Features"]);
+
+    // submit
+    otherSubmit = L.DomUtil.create('button', 'submit', div);
+    otherSubmit.innerHTML = "Save";
+    otherSubmit.onclick = function (e) {
+        onSubmissionButton({
+            row: key,
+            lat: data["Latitude"],
+            lon: data["Longitude"],
+            verified: vcheckbox.checked,
+            markings: mcheckbox.checked,
+            signal: scheckbox.checked,
+            other: otherInput.value
+        });
+    };
+
     return div;
 }
