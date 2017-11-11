@@ -18,7 +18,7 @@ import flask_socketio
 # ---------------- app config -------------- #
 # set up flask and socketio
 app = Flask(__name__, static_url_path='')
-app.config['SECRET_KEY'] = os.environ['FLASK_SECRET']
+app.config['SECRET_KEY'] = os.environ.get('FLASK_SECRET', 'super-secret-key')
 socketio = flask_socketio.SocketIO(app)
 
 # authorize gspread to access the google spreadsheet backend
