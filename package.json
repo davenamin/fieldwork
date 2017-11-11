@@ -1,0 +1,44 @@
+{
+  "name": "fieldwork_frontend",
+  "version": "0.2.0",
+  "description": "a simple web application to log data to a google spreadsheet. mobile friendly and meant to enable real-time collaboration.",
+  "main": "index.js",
+  "scripts": {
+    "build": "webpack",
+    "watch": "webpack --watch"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/davenamin/crosswalk_fieldwork.git"
+  },
+  "keywords": [],
+  "author": "Daven Amin",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/davenamin/crosswalk_fieldwork/issues"
+  },
+  "homepage": "https://github.com/davenamin/crosswalk_fieldwork#readme",
+  "devDependencies": {
+    "@types/jquery": "3.2.16",
+    "@types/leaflet": "1.2.2",
+    "@types/leaflet-providers": "1.1.2",
+    "@types/leaflet.markercluster": "1.0.1",
+    "clean-webpack-plugin": "0.1.17",
+    "css-loader": "0.28.7",
+    "file-loader": "1.1.5",
+    "font-awesome": "4.7.0",
+    "html-webpack-plugin": "2.30.1",
+    "jquery": "3.2.1",
+    "leaflet": "1.2.0",
+    "leaflet-easybutton": "2.2.4",
+    "leaflet-fa-markers": "0.0.5",
+    "leaflet-providers": "1.1.17",
+    "leaflet.markercluster": "1.2.0",
+    "socket.io-client": "2.0.4",
+    "style-loader": "0.19.0",
+    "ts-loader": "3.1.1",
+    "typescript": "2.6.1",
+    "uglifyjs-webpack-plugin": "1.0.1",
+    "webpack": "3.8.1"
+  }
+}

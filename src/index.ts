@@ -1,9 +1,44 @@
 /** main logic for client-side */
-map_fn = function () {
-    var map = L.map('map').fitWorld();
+import * as $ from 'jquery';
+
+import 'font-awesome/css/font-awesome.css';
+
+import 'leaflet/dist/leaflet.css';
+import * as L from 'leaflet';
+
+import 'leaflet.markercluster/dist/MarkerCluster.css';
+import 'leaflet.markercluster/dist/MarkerCluster.Default.css';
+import 'leaflet.markercluster';
+
+import 'leaflet-providers';
+
+import 'leaflet-easybutton/src/easy-button.css';
+import 'leaflet-easybutton';
+
+import 'leaflet-fa-markers/L.Icon.FontAwesome.css';
+import 'leaflet-fa-markers';
+
+import * as io from 'socket.io-client';
+
+import './map.css';
+
+declare global {
+    interface Window { 
+        cluster: any, 
+        infoControl: any, 
+        map: any, 
+        popup: any, 
+        socket: any,
+        myCircle: any,
+        markers: any
+    }
+}
+
+var map_fn = function () {
+    let map = L.map('map').fitWorld();
     L.tileLayer.provider('OpenStreetMap.Mapnik').addTo(map);
     map.setZoom(13);
-    map.setView([41.48, -71.31]);
+    map.setView([41.48, -71.31], undefined);
 
     // locate button
     L.easyButton('fa-crosshairs fa-lg',
@@ -22,11 +57,11 @@ map_fn = function () {
             var cluster_class = "partial";
             for (var ii = 0; ii < markers.length; ii++) {
                 var m = markers[ii];
-                if (!m.data) {
+                if (!(<any>m).data) {
                     cluster_class = "unknown";
                     break;
                 } else {
-                    if (!m.data["Verified Status"].toUpperCase().includes("Y")) {
+                    if (!(<any>m).data["Verified Status"].toUpperCase().includes("Y")) {
                         if (cluster_class === "verified") {
                             cluster_class = "partial";
                             break;
@@ -57,14 +92,14 @@ map_fn = function () {
     window.cluster.addTo(map);
 
     // connection status
-    var info = L.control();
+    var info = new L.Control();
 
     info.onAdd = function (map) {
         this._div = L.DomUtil.create('div', 'info');
         this.updateConnectionStatus("disconnected");
         return this._div;
     };
-    info.updateConnectionStatus = function (status) {
+    (<any>info).updateConnectionStatus = function (status) {
         if (status.toUpperCase() === "CONNECTED".toUpperCase()) {
             this._div.innerHTML = '<h4>connected</h4>'
         } else {
@@ -75,7 +110,7 @@ map_fn = function () {
     window.infoControl = info;
 
     // map legend
-    var legend = L.control({
+    var legend =new L.Control({
         position: 'bottomright'
     });
 
@@ -163,16 +198,16 @@ function onDataReceived(e) {
         }
     }
     window.markers = [];
-    data = JSON.parse(e);
+    var data = JSON.parse(e);
     for (var ii = 0; ii < data.length; ii++) {
-        var m = buildMarker(ii, data[ii]);
+        var m = buildMarker(ii, data[ii], undefined);
         window.markers[ii] = m;
         window.cluster.addLayer(m);
     }
 }
 
 function onUpdateReceived(e) {
-    data = JSON.parse(e);
+    var data = JSON.parse(e);
     console.log(data);
     for (var ix in data) {
         console.log("updating ix " + ix);
@@ -187,7 +222,7 @@ function onUpdateReceived(e) {
 }
 
 function onRemovedReceived(e) {
-    data = e;
+    var data = e;
     console.log(data);
     for (var ix in data) {
         console.log("removing ix " + data[ix]);
@@ -211,11 +246,12 @@ function buildMarker(key, data, prevMarker) {
     if (prevMarker) {
         marker = prevMarker;
     } else {
-        marker = L.marker().bindPopup("");
+        marker = L.marker([data["Latitude"], data["Longitude"]]).bindPopup("");
     }
     marker.setLatLng([data["Latitude"], data["Longitude"]]);
     marker.data = data;
-    var opts = {};
+    var opts = <any>{};
+    opts.iconColor = "white";
     if (data["Verified Status"] && data["Verified Status"] == "Y") {
         opts.markerColor = "green";
     } else {
@@ -223,12 +259,12 @@ function buildMarker(key, data, prevMarker) {
     }
     if (data["Pedestrian Markings"] &&
         data["Pedestrian Markings"].toUpperCase() !== "unmarked".toUpperCase()) {
-        opts.icon = "times"
+        opts.iconClasses = "fa fa-times"
     } else {
-        opts.icon = "exchange"
+        opts.iconClasses = "fa fa-exchange"
     }
 
-    marker.setIcon(L.VectorMarkers.icon(opts));
+    marker.setIcon((<any>L.icon).fontAwesome(opts));
     marker.setPopupContent(buildPopupContent(key, data));
     return marker;
 }
@@ -238,7 +274,7 @@ function buildPopupContent(key, data) {
     var div = L.DomUtil.create('div', 'info gis');
 
     // notes
-    L.DomUtil.create('br', div);
+    L.DomUtil.create('br', undefined, div);
     var notes = L.DomUtil.create('label', 'notes', div);
     notes.innerHTML = "Notes: " + data["Notes"] + "<br>";
 
@@ -250,32 +286,32 @@ function buildPopupContent(key, data) {
     var vcheckbox = L.DomUtil.create('input', 'slider', verify);
     vcheckbox.setAttribute("type", "checkbox");
     if (data["Verified Status"] && data["Verified Status"].toUpperCase() === "Y") {
-        vcheckbox.checked = True;
+        (<any>vcheckbox).checked = true;
     }
 
     // pedestrian markings
-    L.DomUtil.create('br', div);
+    L.DomUtil.create('br', undefined, div);
     var markings = L.DomUtil.create('label', 'switch', div);
     markings.innerHTML = "Pedestrian Markings";
     var mcheckbox = L.DomUtil.create('input', 'slider', markings);
     mcheckbox.setAttribute("type", "checkbox");
     if (data["Pedestrian Markings"] && data["Pedestrian Markings"].toUpperCase() === "Y") {
-        mcheckbox.checked = True;
+        (<any>mcheckbox).checked = true;
     }
 
     // crossing signal
-    L.DomUtil.create('br', div);
+    L.DomUtil.create('br', undefined, div);
     var signal = L.DomUtil.create('label', 'switch', div);
     signal.innerHTML = "Crossing Signal";
     var scheckbox = L.DomUtil.create('input', 'slider', signal);
     scheckbox.setAttribute("type", "checkbox");
     if (data["Crossing Signal"] && data["Crossing Signal"].toUpperCase() === "Y") {
-        scheckbox.checked = True;
+        (<any>scheckbox).checked = true;
     }
 
 
     // other features
-    L.DomUtil.create('br', div);
+    L.DomUtil.create('br', undefined, div);
     var other = L.DomUtil.create('label', 'notes', div);
     other.innerHTML = "Other Features: ";
     var otherInput = L.DomUtil.create('input', 'notes', other);
@@ -283,19 +319,20 @@ function buildPopupContent(key, data) {
     otherInput.setAttribute("placeholder", data["Other Features"]);
 
     // submit
-    otherSubmit = L.DomUtil.create('button', 'submit', div);
+    var otherSubmit = L.DomUtil.create('button', 'submit', div);
     otherSubmit.innerHTML = "Save";
     otherSubmit.onclick = function (e) {
         onSubmissionButton({
             row: key,
             lat: data["Latitude"],
             lon: data["Longitude"],
-            verified: vcheckbox.checked,
-            markings: mcheckbox.checked,
-            signal: scheckbox.checked,
-            other: otherInput.value
+            verified: (<any>vcheckbox).checked,
+            markings: (<any>mcheckbox).checked,
+            signal: (<any>scheckbox).checked,
+            other: (<any>otherInput).value
         });
     };
 
     return div;
 }
+$(map_fn);

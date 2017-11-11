@@ -12,12 +12,12 @@ from pathlib import Path
 from google.oauth2 import service_account
 from google.auth.transport.requests import AuthorizedSession
 import gspread
-from flask import Flask, render_template, url_for
+from flask import Flask, url_for
 import flask_socketio
 
 # ---------------- app config -------------- #
 # set up flask and socketio
-app = Flask(__name__)
+app = Flask(__name__, static_url_path='')
 app.config['SECRET_KEY'] = os.environ['FLASK_SECRET']
 socketio = flask_socketio.SocketIO(app)
 
@@ -30,20 +30,6 @@ scoped_creds = credentials.with_scopes(scope)
 authed_session = AuthorizedSession(scoped_creds)
 gc = gspread.Client(auth=scoped_creds)
 gc.session = authed_session
-
-# grab all relevant files in the static directory - we want to inject them
-# into the main entry point's HEAD section
-css_files = [Path(os.path.join(parent.replace('static'+os.sep, '', 1), x))
-             for parent, _, files
-             in os.walk('static')
-             for x in files
-             if x.endswith(".css")]
-
-js_files = [Path(os.path.join(parent.replace('static'+os.sep, '', 1), x))
-            for parent, _, files
-            in os.walk('static')
-            for x in files
-            if x.endswith(".js")]
 
 
 # ------------- data stuff ---------------- #
@@ -198,11 +184,7 @@ def start_background():
 @app.route('/')
 def index():
     """main entry point - serves a page which initiates websocket comms"""
-    return render_template('index.html',
-                           css_files=[url_for('static', filename=x.as_posix())
-                                      for x in css_files],
-                           js_files=[url_for('static', filename=x.as_posix())
-                                     for x in js_files])
+    return app.send_static_file('index.html')
 
 if __name__ == '__main__':
     socketio.run(app, debug=True)

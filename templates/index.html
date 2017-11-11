@@ -2,31 +2,10 @@
 <html>
 
 <head>
-  <title>Fieldwork App</title>
-  {% for css in css_files %}
-  <link rel="stylesheet" href="{{ css }}"> 
-  {% endfor %} 
-
-  {% for js in js_files %}
-  <script src="{{ js }}"></script>
-  {% endfor %}
+  <title>Fieldwork</title>
+  <meta content="text/html;charset=utf-8" http-equiv="Content-Type">
+  <meta content="utf-8" http-equiv="encoding">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-  <style>
-    body {
-      padding: 0;
-      margin: 0;
-    }
-
-    html,
-    body,
-    #map {
-      height: 100vh;
-      width: 100vw;
-    }
-  </style>
-  <script>
-    $(map_fn);
-  </script>
 </head>
 
 <body>
