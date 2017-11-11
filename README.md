@@ -17,7 +17,7 @@ just when setting things up!) live in `admin.py`.
 
 the "frontend" is written in Typescript, uses Leaflet (with several plugins),
 SocketIO, Vue.js, and is built by Webpack. The Webpack and Typescript 
-configurationsare in `webpack.config.js` and `tsconfig.json` respectively. 
+configurations are in `webpack.config.js` and `tsconfig.json` respectively. 
 The code lives in the `src` and `template` folders, and Webpack will emit the 
 built code into the `static` folder (and create it if necessary). The contents
 of `static` are served up by Flask and the backend.
@@ -51,8 +51,9 @@ python 3.6.2 in it (which is what is supported by Heroku/Dokku) and then
 installed all of the required python libraries for this application.
 
 
-install [NodeJS](https://nodejs.org/), probably the LTS version, 
-and install the node dependencies for this application. 
+install [NodeJS](https://nodejs.org/), probably the LTS version
+
+install the node dependencies for this application. 
 if you're on windows, this means open a command prompt and run:
 ```
 > cd <path to this repository>
@@ -62,12 +63,12 @@ if you're on windows, this means open a command prompt and run:
 ### environment variables to link with a Google Spreadsheet ###
 set the following environment variables
 * "GOOGLE\_SHEET\_KEY" to the id of the backing sheet, 
-* "GOOGLE\_CREDENTIALS" to the private key from the google API.
+* "GOOGLE\_CREDENTIALS\_PATH" to the path of the private key from the google API.
 
 if you don't know what that means, follow [this tutorial](https://www.twilio.com/blog/2017/03/google-spreadsheets-and-net-core.html), 
 especially the section called "Get access to your spreadsheets". don't forget to
 share the Google Spreadsheet with the email address from `client_secret.json`!
-the "private key from the google API" is the contents of `client_secret.json`
+the "private key from the google API" is the **path** of `client_secret.json`
 and the "id of the backing sheet" is the [Spreadsheet ID](https://developers.google.com/sheets/api/guides/concepts#spreadsheet_id).
 
 this application is meant to run on Dokku, and that means any information
@@ -85,7 +86,7 @@ if you're on windows and followed the previous steps open up a command prompt an
 > import admin
 > admin.write_base64_encoded_credentials("base64credentials.txt")
 ```
-set the environment variable "GOOGLE\_CREDENTIALS\_B64" to the contents of the
+set the environment variable "GOOGLE\_CREDENTIALS\_B64" to the **contents** of the
 newly-created `base64credentials.txt` file.
 
 ### run the app locally, while developing ###
@@ -105,6 +106,7 @@ and
 > cd <path to this repository>
 > npm run watch
 ```
+in them. the application should be running at http://localhost:5000
 
 ### deployment on [Dokku](http://dokku.viewdocs.io/dokku/)! ###
 Note: FLASK_SECRET is an additional environment variable for [the Flask secret key](https://stackoverflow.com/questions/22463939/demystify-flask-app-secret-key).

@@ -11,7 +11,8 @@ import gspread
 
 # authorize gspread to access the google spreadsheet backend
 # adapted from https://github.com/burnash/gspread/issues/472
-json_creds = json.loads(os.environ['GOOGLE_CREDENTIALS'])
+with open(os.environ['GOOGLE_CREDENTIALS_PATH']) as jsonfile:
+    json_creds = json.load(jsonfile)
 scope = ['https://www.googleapis.com/auth/spreadsheets']
 credentials = service_account.Credentials.from_service_account_info(json_creds)
 scoped_creds = credentials.with_scopes(scope)
@@ -24,8 +25,10 @@ backend = gc.open_by_key(os.environ['GOOGLE_SHEET_KEY'])
 def write_base64_encoded_credentials(filename):
     """get past dokku issue where credentials need to be encoded"""
     with open(filename, 'w') as f:
-        f.write(base64.b64encode(
-            os.environ['GOOGLE_CREDENTIALS'].encode()).decode())
+        f.write(
+            base64.b64encode(
+                json.dumps(json_creds).encode()
+            ).decode())
 
 
 def import_geojson_to_sheet(geojson_path):
@@ -65,15 +68,15 @@ def import_geojson_to_sheet(geojson_path):
                           "Pedestrian Markings", "Crossing Signal",
                           "Other Features", "Notes"]
             # create enough rows and columns to batch an update
-            worksheet.resize(rows=len(parsed_list)+1, cols=len(row_header))
+            worksheet.resize(rows=len(parsed_list) + 1, cols=len(row_header))
             batched_cells = worksheet.range(1, 1,
-                                            len(parsed_list)+1,
+                                            len(parsed_list) + 1,
                                             len(row_header))
             for cel in batched_cells:
                 if cel.row == 1:
-                    cel.value = row_header[cel.col-1]
+                    cel.value = row_header[cel.col - 1]
                 else:
-                    cel.value = parsed_list[cel.row-2][cel.col-1]
+                    cel.value = parsed_list[cel.row - 2][cel.col - 1]
 
             worksheet.update_cells(batched_cells)
         except AttributeError as e:
