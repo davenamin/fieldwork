@@ -1,33 +1,230 @@
-/** main logic for client-side */
-import * as $ from 'jquery';
+/* jslint esversion:6 */
 
 import 'font-awesome/css/font-awesome.css';
 
+import 'leaflet';
 import 'leaflet/dist/leaflet.css';
-import * as L from 'leaflet';
 
+import 'leaflet.markercluster';
 import 'leaflet.markercluster/dist/MarkerCluster.css';
 import 'leaflet.markercluster/dist/MarkerCluster.Default.css';
-import 'leaflet.markercluster';
 
 import 'leaflet-providers';
 
-import 'leaflet-easybutton/src/easy-button.css';
 import 'leaflet-easybutton';
+import 'leaflet-easybutton/src/easy-button.css';
 
-import 'leaflet-fa-markers/L.Icon.FontAwesome.css';
 import 'leaflet-fa-markers';
+import 'leaflet-fa-markers/L.Icon.FontAwesome.css';
 
-import * as io from 'socket.io-client';
+import io from 'socket.io-client';
 
+import Vue from 'vue';
+import Vuex from 'vuex';
+
+/** custom CSS */
 import './map.css';
 
+
+/** frontend entry point */
+
+Vue.use(Vuex);
+
+
+// we have four primary objects: the Leaflet Map (map), the SocketIO
+// Socket (socket), the Vuex Store (store), a bunch of Vue components
+// as View Models which wrap leaflet things, and the top level Vue
+// View Model (vm)
+
+const map = L.map('map').fitWorld().addLayer(L.tileLayer.provider('OpenStreetMap.Mapnik'));
+const socket = io();
+
+const store = new Vuex.Store({
+    state: {
+        status: "unknown",
+        test_row: {
+            backgroundColor: 'white',
+            foregroundColor: 'black',
+            iconClasses: 'fa-info-circle',
+            lat: 45,
+            lng: -71,
+            popupContent: "howdy from test module"
+        },
+	rows: ["test_row"]
+    },
+    mutations: {
+        update_status(state, val) {
+            state.status = val.status;
+        },
+        update_icon(state, val) {
+            state[val.marker_id] = {
+                backgroundColor: val.backgroundColor,
+                foregroundColor: val.foregroundColor,
+                iconClasses: val.iconClasses,
+                lat: val.lat,
+                lng: val.lng,
+                popupContent: val.popupContent
+            };
+        }
+    }
+});
+
+
+/**------------ VIEW MODELS ------------*/
+
+/**
+ * a view model for a leaflet control acting as a status indicator.
+ * binds the "status" property of the vuex store to the leaflet
+ * control's HTML.
+ */
+var StatusModel = Vue.component('status-vm', {
+    computed: {
+	/**
+         * a property which creates the status bar created in the
+         * upper right corner of the map.
+         */
+        info_box: function () {
+	    let control = new L.Control({
+                position: 'topright'
+	    });
+	    let control_div = L.DomUtil.create('div', 'info',
+					       control.getContainer());
+	    control.onAdd = function (aMap) {
+                return control_div;
+	    };
+	    control.onRemove = function (aMap) {
+                L.DomUtil.remove(control_div);
+	    };
+	    control.addTo(map);
+	    return control;
+        }
+    },
+    render: function (createElement) {
+        const state = this.$store.state;
+        let container = this.info_box.getContainer();
+        if (container) {
+            container.innerHTML = state.status;
+        }
+        return createElement();
+    }
+});
+
+/**
+ * a view model for a leaflet marker cluster group. creates child
+ * components representing markers for each element of the "rows"
+ * property in the vuex store.
+ */
+var MarkerClusterModel = Vue.component('cluster-vm', {
+    computed: {
+	/** 
+     	 * the cluster marker layer which holds all markers on the map.
+     	 */
+     	markers_layer: function() {
+     	    let layer = new L.markerClusterGroup();
+     	    layer.addTo(map);
+     	    return layer;
+     	}
+    },
+    render: function (createElement) {
+	const state = this.$store.state;
+	const layer = this.markers_layer;
+	return createElement(
+	    'div', // placeholder element
+	    // make a new MarkerModel for every row_id in rows
+	    state.rows.map(function(row_id){
+		return createElement(
+		    MarkerModel,
+		    {
+			props: {
+			    marker_id: row_id,
+			    parent_layer: layer
+			}
+		    });
+	    })
+	);
+    }
+});
+
+/**
+ * a view model for a leaflet marker. binds to an object representing
+ * a row of the spreadsheet in the vuex store.
+ */
+var MarkerModel = Vue.component('marker-vm', {
+    props: {
+	parent_layer: {
+	    type: L.MarkerClusterGroup,
+	    required: true
+	},
+        marker_id: {
+            type: String,
+            required: true
+        }
+    },
+    computed: {
+	/** the marker this view model wraps */
+	marker: function() {
+	    // using placeholder lat/lng and empty popup for now
+	    return L.marker([0, 0]).bindPopup('');
+	}
+    },
+    created: function() {
+	this.parent_layer.addLayer(this.marker);
+    },
+    destroyed: function() {
+	this.parent_layer.removeLayer(this.marker);
+    },
+    render: function (createElement) {
+        const state = this.$store.state;
+        let val = state[this.marker_id];
+        let marker = this.marker;
+
+        marker.setLatLng([val.lat, val.lng]);
+        let opts = {
+            markerColor: val.backgroundColor,
+            iconColor: val.foregroundColor,
+            iconClasses: 'fa ' + val.iconClasses
+        };
+        marker.setIcon(L.icon.fontAwesome(opts));
+        marker.setPopupContent(val.popupContent);
+
+        this.parent_layer.refreshClusters(marker);
+
+        return createElement();
+    }
+});
+
+
+/**
+ * the Vue main object. instantiates child components to make and
+ * manage leaflet things (currently a top level status indicator and a
+ * marker cluster layer)
+ */
+const vm = new Vue({
+    store,
+    render: function (createElement) {
+        return createElement(
+	    'div', // placeholder
+	    [createElement(StatusModel),
+	     createElement(MarkerClusterModel)]
+	);
+    }
+});
+
+vm.$mount();
+
+// for debugging!!
+window.vm = vm;
+
+
+/**
+
+
 declare global {
-    interface Window { 
-        cluster: any, 
-        infoControl: any, 
-        map: any, 
-        popup: any, 
+    interface Window {
+        cluster: any,
+        infoControl: any,
+        map: any,
+        popup: any,
         socket: any,
         myCircle: any,
         markers: any
@@ -110,7 +307,7 @@ var map_fn = function () {
     window.infoControl = info;
 
     // map legend
-    var legend =new L.Control({
+    var legend = new L.Control({
         position: 'bottomright'
     });
 
@@ -139,7 +336,6 @@ var map_fn = function () {
     map.on('locationerror', onLocationError);
     map.on('contextmenu', onMapPress);
 
-    var socket = io();
     socket.on('connect', onSocketConnect)
         .on('disconnect', onSocketDisconnect)
         .on('data', onDataReceived)
@@ -336,3 +532,5 @@ function buildPopupContent(key, data) {
     return div;
 }
 $(map_fn);
+
+*/

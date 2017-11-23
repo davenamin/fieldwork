@@ -1,3 +1,4 @@
+/* jshint esversion:6 */
 const webpack = require('webpack');
 const path = require('path');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
@@ -5,7 +6,7 @@ const CleanWebpackPlugin = require('clean-webpack-plugin');
 const UglifyJSPlugin = require('uglifyjs-webpack-plugin');
 
 module.exports = {
-	entry: './src/index.ts',
+	entry: './src/index.js',
 	plugins: [
 		new CleanWebpackPlugin(['static']),
 		new HtmlWebpackPlugin({
@@ -26,9 +27,13 @@ module.exports = {
 		filename: 'bundle.js',
 		path: path.resolve(__dirname, 'static')
 	},
+	resolve: {
+		alias: process.env.NODE_ENV !== 'production' ? {
+			'vue$': 'vue/dist/vue.esm.js' // 'vue/dist/vue.common.js' for webpack 1
+		} : {}
+	},
 	module: {
-		rules: [
-			{
+		rules: [{
 				test: /\.css$/,
 				use: ['style-loader', 'css-loader']
 			},
@@ -41,8 +46,9 @@ module.exports = {
 				loader: ['file-loader']
 			},
 			{
-				test: /\.ts$/,
-				use: 'ts-loader'
+				test: /\.js$/,
+				use: 'babel-loader',
+				exclude: /node-modules/
 			}
 		]
 	}
