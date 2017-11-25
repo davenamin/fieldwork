@@ -14,5 +14,11 @@ vm.set_marker_opts({
     }
 });
 
+var legend = {'Verified': 'green',
+	      'Not Verified': 'blue',
+	      'Cluster contains both': 'orange'};
+
+vm.set_legend(legend);
+
 // for debugging!
 window.vm = vm;

@@ -35,6 +35,7 @@ Vue.use(Vuex);
 const store = new Vuex.Store({
     state: {
         status: "loading...",
+	legend: {},
 	marker_ids: [],
 	marker_opts: {},
 	location: undefined
@@ -43,6 +44,9 @@ const store = new Vuex.Store({
         set_status(state, val) {
             state.status = val;
         },
+	set_legend(state, val) {
+	    state.legend = val;
+	},
 	set_markers(state, val) {
 	    state.marker_ids = val;
 	},
@@ -107,6 +111,58 @@ var StatusModel = Vue.component('status-vm', {
         return createElement();
     }
 });
+
+/**
+ * a view model for a leaflet control acting as a map legend.
+ */
+var LegendModel = Vue.component('legend-vm', {
+    props: {
+	leaflet_map: {
+	    type: L.Map,
+	    required: true
+	}
+    },
+    computed: {
+	/**
+         * a property which creates the map legend in the lower right
+         * corner of the map.
+         */
+        map_legend() {
+	    let control = new L.Control({
+                position: 'bottomright'
+	    });
+	    let control_div = L.DomUtil.create('div', 'info legend',
+					       control.getContainer());
+
+            control.onAdd = function (aMap) {
+                return control_div;
+	    };
+	    control.onRemove = function (aMap) {
+                L.DomUtil.remove(control_div);
+	    };
+	    control.addTo(this.leaflet_map);
+	    return control;
+        }
+    },
+    render(createElement) {
+	const state = this.$store.state;
+        const container = this.map_legend.getContainer();
+	const legend = state.legend;
+        if (container) {
+            container.innerHTML = '';
+	    const legend_keys = _.keys(legend);
+            for (var i = 0; i < legend_keys.length; i++) {
+		let key = legend_keys[i];
+		let color = legend[key];
+		container.innerHTML +=
+                    '<i style="background:' + color + '"></i> ' +
+                    key + ((i+1) < legend_keys.length ? '<br>' : '');
+            }
+	}
+        return createElement();
+    }
+});
+
 
 /**
  * a view model for a leaflet marker cluster group. creates child
@@ -304,6 +360,7 @@ const vm = new Vue({
     },
     methods: { // expose mutations on the vuex store
         set_status(val) {this.$store.commit('set_status', val);},
+        set_legend(val) {this.$store.commit('set_legend', val);},
 	set_markers(val) {this.$store.commit('set_markers', val);},
         set_marker_opts(val) {this.$store.commit('set_marker_opts', val);},
 	set_location(val) {this.$store.commit('set_location', val);}
@@ -313,6 +370,10 @@ const vm = new Vue({
 	    'div', // placeholder element
 	    [
 		createElement(StatusModel,
+			      {props:{
+				  leaflet_map: this.leaflet_map
+			      }}),
+		createElement(LegendModel,
 			      {props:{
 				  leaflet_map: this.leaflet_map
 			      }}),
