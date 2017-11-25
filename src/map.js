@@ -16,10 +16,10 @@ import 'leaflet-easybutton/src/easy-button.css';
 import 'leaflet-fa-markers';
 import 'leaflet-fa-markers/L.Icon.FontAwesome.css';
 
-import $ from 'jquery';
-
 import Vue from 'vue';
 import Vuex from 'vuex';
+
+import _ from 'lodash';
 
 /** custom CSS */
 import './map.css';
@@ -34,37 +34,31 @@ Vue.use(Vuex);
 
 const store = new Vuex.Store({
     state: {
-        status: "unknown",
-        test_row: {
-            backgroundColor: 'white',
-            foregroundColor: 'black',
-            iconClasses: 'fa-info-circle',
-            lat: 45,
-            lng: -71,
-            popupContent: "howdy from test module"
-        },
-	marker_ids: ["test_row"]
+        status: "loading...",
+	marker_ids: [],
+	marker_opts: {},
+	location: undefined
     },
     mutations: {
         set_status(state, val) {
-            state.status = val.status;
+            state.status = val;
         },
 	set_markers(state, val) {
-	    state.marker_ids = val.marker_ids;
+	    state.marker_ids = val;
 	},
         set_marker_opts(state, val) {
 	    if (!val.marker_id) {
 		// marker_id is required
 		return;
 	    }
-	    // make a new object for this marker_id if necessary
-	    if (!state[val.marker_id]){
-		state[val.marker_id] = {};
-	    }
-
-	    let marker_opts = state[val.marker_id];
-	    $.extend(marker_opts, val);
-        }
+	    // merge the marker options passed in with any previous ones
+	    const opts = state.marker_opts[val.marker_id];
+	    Vue.set(state.marker_opts, val.marker_id,
+		    _.merge({}, opts, val));
+        },
+	set_location(state, val) {
+	    state.location = val;
+	}
     }
 });
 
@@ -187,25 +181,83 @@ var MarkerModel = Vue.component('marker-vm', {
     },
     render(createElement) {
         const state = this.$store.state;
-        let val = state[this.marker_id];
+        let opts = state.marker_opts[this.marker_id];
         let marker = this.marker;
 
-	if (!(val && marker)) {
+	if (!(opts && marker)) {
 	    // both marker and opts are required
 	    return createElement();
 	}
 
-        marker.setLatLng([val.lat, val.lng]);
+	if (marker.getLatLng() !== opts.latlng){
+            marker.setLatLng(opts.latlng);
+	}
 
-        let opts = {
-            markerColor: val.backgroundColor,
-            iconColor: val.foregroundColor,
-            iconClasses: 'fa ' + val.iconClasses
-        };
-        marker.setIcon(L.icon.fontAwesome(opts));
-        marker.setPopupContent(val.popupContent);
+	if (marker.options.icon &&
+	    marker.options.icon.options !== opts.iconOpts) {
+            marker.setIcon(L.icon.fontAwesome(opts.iconOpts));
+	}
+
+	if (marker.getPopup().getContent() !== opts.popupContent) {
+            marker.setPopupContent(opts.popupContent);
+	}
 
         this.parent_layer.refreshClusters(marker);
+
+        return createElement();
+    }
+});
+
+/**
+ * a view model for a leaflet circle marker, representing user's
+ * location. binds to the value of the object in the vuex store with
+ * key "location", which is assumed to be the contents of a leaflet
+ * "locationfound" event.
+ */
+var LocationMarkerModel = Vue.component('location-vm', {
+    props: {
+	leaflet_map: {
+	    type: L.Map,
+	    required: true
+	}
+    },
+    computed: {
+	/** the circle marker this view model wraps */
+	marker() {
+	    // using placeholder lat/lng for now
+	    return L.circle([0, 0])
+		.setStyle({stroke: false, fill: false})
+		.bindPopup('your reported location');
+	}
+    },
+    created() {
+	this.leaflet_map.addLayer(this.marker);
+    },
+    destroyed() {
+	this.leaflet_map.removeLayer(this.marker);
+    },
+    render(createElement) {
+        const state = this.$store.state;
+        const e = state.location;
+        const marker = this.marker;
+
+	if (!e) {
+	    // location event is required
+	    marker.setStyle({stroke: false, fill: false});
+	    return createElement();
+	}
+
+	marker.setStyle({stroke: true, fill: true});
+
+	if (marker.getLatLng() !== e.latlng){
+            marker.setLatLng(e.latlng);
+	}
+
+	const radius = e.accuracy/2;
+	if (marker.getRadius() != radius){
+	    marker.setRadius(radius);
+	}
+        this.leaflet_map.openPopup(marker.getPopup());
 
         return createElement();
     }
@@ -214,8 +266,7 @@ var MarkerModel = Vue.component('marker-vm', {
 
 /**
  * the Vue main object. holds the main leaflet map. instantiates child
- * components to make and manage leaflet things (currently a top level
- * status indicator and a marker cluster layer)
+ * components to make and manage leaflet things 
  *
  * also exposes methods that commit changes to the vuex store (changes
  * to data bound by leaflet things)
@@ -226,16 +277,36 @@ const vm = new Vue({
     store: store, // make vuex store available for components as this.$store
     el: '#app',
     computed: {
+	/** 
+	 * make a leaflet map with a tileLayer and location button and
+	 * hook up leaflet's onlocation found event to the vuex store.
+	 */
 	leaflet_map() {
-	    return L.map('map')
+	    let map = L.map('map')
 		.fitWorld()
 		.addLayer(L.tileLayer.provider('OpenStreetMap.Mapnik'));
+
+	    L.easyButton('fa-crosshairs fa-lg',
+			 function () {
+			     map.locate({
+				 setView: true,
+				 maxZoom: 16
+			     });
+			 }).addTo(map);
+
+	    map.on('locationfound', this.set_location);
+	    map.on('locationerror', function(e){
+		this.set_location(undefined);
+		alert(e.message);});
+ 
+	    return map;
 	}
     },
     methods: { // expose mutations on the vuex store
         set_status(val) {this.$store.commit('set_status', val);},
 	set_markers(val) {this.$store.commit('set_markers', val);},
-        set_marker_opts(val) {this.$store.commit('set_marker_opts', val);}
+        set_marker_opts(val) {this.$store.commit('set_marker_opts', val);},
+	set_location(val) {this.$store.commit('set_location', val);}
     },
     render(createElement) {
         return createElement(
@@ -246,6 +317,10 @@ const vm = new Vue({
 				  leaflet_map: this.leaflet_map
 			      }}),
 		createElement(MarkerClusterModel,
+			      {props:{
+				  leaflet_map: this.leaflet_map
+			      }}),
+		createElement(LocationMarkerModel,
 			      {props:{
 				  leaflet_map: this.leaflet_map
 			      }})
