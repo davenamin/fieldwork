@@ -38,7 +38,9 @@ const store = new Vuex.Store({
 	legend: {},
 	marker_ids: [],
 	marker_opts: {},
-	location: undefined
+	location: undefined,
+	map_press: undefined,
+	popup: undefined
     },
     mutations: {
         set_status(state, val) {
@@ -62,6 +64,12 @@ const store = new Vuex.Store({
         },
 	set_location(state, val) {
 	    state.location = val;
+	},
+	set_map_press(state, val) {
+	    state.map_press = val;
+	},
+	set_popup(state, val) {
+	    state.popup = val;
 	}
     }
 });
@@ -319,6 +327,54 @@ var LocationMarkerModel = Vue.component('location-vm', {
     }
 });
 
+/**
+ * a view model for a leaflet popup, representing user interaction
+ * with the map. binds to the value of the object in the vuex store
+ * with key "popup", which is assumed to be the desired contents of
+ * the popup, and "map_press", which is assumed to be a mouse event of
+ * the user long-pressing or right-clicking the map.
+ */
+var UserPopupModel = Vue.component('popup-vm', {
+    props: {
+	leaflet_map: {
+	    type: L.Map,
+	    required: true
+	}
+    },
+    computed: {
+	/** the popup this view model wraps */
+	popup() {
+	    // using placeholder lat/lng for now
+	    return L.popup();
+	}
+    },
+    render(createElement) {
+        const state = this.$store.state;
+        const e = state.map_press;
+	const content = state.popup;
+        const popup = this.popup;
+
+	if (!e || !content) {
+	    // map press is required
+	    popup.closePopup();
+	    return createElement();
+	}
+
+	if (popup.getContent() !== content)
+	{
+	    popup.setContent(content);
+	}
+
+	if (popup.getLatLng() !== e.latlng){
+            popup.setLatLng(e.latlng);
+	}
+
+        this.leaflet_map.openPopup(popup);
+
+        return createElement();
+    }
+});
+
 
 /**
  * the Vue main object. holds the main leaflet map. instantiates child
@@ -350,6 +406,7 @@ const vm = new Vue({
 			     });
 			 }).addTo(map);
 
+	    map.on('contextmenu', this.set_map_press);
 	    map.on('locationfound', this.set_location);
 	    map.on('locationerror', function(e){
 		this.set_location(undefined);
@@ -363,7 +420,9 @@ const vm = new Vue({
         set_legend(val) {this.$store.commit('set_legend', val);},
 	set_markers(val) {this.$store.commit('set_markers', val);},
         set_marker_opts(val) {this.$store.commit('set_marker_opts', val);},
-	set_location(val) {this.$store.commit('set_location', val);}
+	set_location(val) {this.$store.commit('set_location', val);},
+	set_map_press(val) {this.$store.commit('set_map_press', val);},
+	set_popup(val) {this.$store.commit('set_popup', val);}
     },
     render(createElement) {
         return createElement(
@@ -382,6 +441,10 @@ const vm = new Vue({
 				  leaflet_map: this.leaflet_map
 			      }}),
 		createElement(LocationMarkerModel,
+			      {props:{
+				  leaflet_map: this.leaflet_map
+			      }}),
+		createElement(UserPopupModel,
 			      {props:{
 				  leaflet_map: this.leaflet_map
 			      }})
