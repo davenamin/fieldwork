@@ -19,7 +19,7 @@ import 'leaflet-fa-markers/L.Icon.FontAwesome.css';
 import Vue from 'vue';
 import Vuex from 'vuex';
 
-import _ from 'lodash';
+import $ from 'jquery';
 
 /** custom CSS */
 import './map.css';
@@ -60,7 +60,7 @@ const store = new Vuex.Store({
 	    // merge the marker options passed in with any previous ones
 	    const opts = state.marker_opts[val.marker_id];
 	    Vue.set(state.marker_opts, val.marker_id,
-		    _.merge({}, opts, val));
+		    $.extend(true, {}, opts, val));
         },
 	set_location(state, val) {
 	    state.location = val;
@@ -158,7 +158,7 @@ var LegendModel = Vue.component('legend-vm', {
 	const legend = state.legend;
         if (container) {
             container.innerHTML = '';
-	    const legend_keys = _.keys(legend);
+	    const legend_keys = Object.keys(legend);
             for (var i = 0; i < legend_keys.length; i++) {
 		let key = legend_keys[i];
 		let color = legend[key];

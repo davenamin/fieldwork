@@ -13,6 +13,12 @@ module.exports = {
 	    title: 'Fieldwork',
 	    template: 'templates/index.html'
 	}),
+	new webpack.ProvidePlugin({
+	    $: 'jquery',
+	    jQuery: 'jquery',
+	    'window.jQuery': 'jquery',
+	    Popper: ['popper.js', 'default']
+	}),
 	/* 
 	   new UglifyJSPlugin(),
 	   new webpack.DefinePlugin({
