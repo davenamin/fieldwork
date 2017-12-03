@@ -8,11 +8,10 @@ import json
 import base64
 import pandas as pd
 from datetime import datetime
-from pathlib import Path
 from google.oauth2 import service_account
 from google.auth.transport.requests import AuthorizedSession
 import gspread
-from flask import Flask, url_for
+from flask import Flask
 import flask_socketio
 
 # ---------------- app config -------------- #
@@ -95,7 +94,7 @@ def update_records():
 def handle_client_connection():
     """called when a new client connects"""
     print('client connected')
-    flask_socketio.emit('data',
+    flask_socketio.emit('all_data',
                         last_values.to_json(orient="records"),
                         broadcast=False,)
 
@@ -105,7 +104,7 @@ def handle_client_disconnection():
     """called when a client disconnects"""
     print('client disconnected')
 
-    
+
 @socketio.on_error()
 def handle_error(e):
     """called on error"""
@@ -137,7 +136,7 @@ def push_data_update(rows):
     """broadcast changed rows in the google spreadsheet"""
     ix_mask = [ix in rows for ix in range(len(last_values))]
     removed = [ix for ix in rows if ix < 0]
-    socketio.emit('data_update', last_values[ix_mask].to_json(orient="index"))
+    socketio.emit('data_updated', last_values[ix_mask].to_json(orient="index"))
     socketio.emit('data_removed', removed)
 
 

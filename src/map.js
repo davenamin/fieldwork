@@ -258,12 +258,12 @@ var MarkerModel = Vue.component('marker-vm', {
 	}
 
 	if (marker.options.icon &&
-	    marker.options.icon.options !== opts.iconOpts) {
-            marker.setIcon(L.icon.fontAwesome(opts.iconOpts));
+	    marker.options.icon.options !== opts.icon) {
+            marker.setIcon(L.icon.fontAwesome(opts.icon));
 	}
 
-	if (marker.getPopup().getContent() !== opts.popupContent) {
-            marker.setPopupContent(opts.popupContent);
+	if (marker.getPopup().getContent() !== opts.popup) {
+            marker.setPopupContent(opts.popup);
 	}
 
         this.parent_layer.refreshClusters(marker);
@@ -414,15 +414,6 @@ const vm = new Vue({
  
 	    return map;
 	}
-    },
-    methods: { // expose mutations on the vuex store
-        set_status(val) {this.$store.commit('set_status', val);},
-        set_legend(val) {this.$store.commit('set_legend', val);},
-	set_markers(val) {this.$store.commit('set_markers', val);},
-        set_marker_opts(val) {this.$store.commit('set_marker_opts', val);},
-	set_location(val) {this.$store.commit('set_location', val);},
-	set_map_press(val) {this.$store.commit('set_map_press', val);},
-	set_popup(val) {this.$store.commit('set_popup', val);}
     },
     render(createElement) {
         return createElement(
