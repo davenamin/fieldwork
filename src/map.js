@@ -98,7 +98,7 @@ var StatusModel = Vue.component('status-vm', {
 	    let control = new L.Control({
                 position: 'topright'
 	    });
-	    let control_div = L.DomUtil.create('div', 'info',
+	    let control_div = L.DomUtil.create('div',
 					       control.getContainer());
 	    control.onAdd = function (aMap) {
                 return control_div;
@@ -139,7 +139,7 @@ var LegendModel = Vue.component('legend-vm', {
 	    let control = new L.Control({
                 position: 'bottomright'
 	    });
-	    let control_div = L.DomUtil.create('div', 'info legend',
+	    let control_div = L.DomUtil.create('div', 'legend',
 					       control.getContainer());
 
             control.onAdd = function (aMap) {
